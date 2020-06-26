@@ -1,7 +1,7 @@
-
-# Dividendos
+# Utility functions
 import yfinance as yf
 import pandas as pd
+import requests
 
 
 def dividends_splits(input_value):
@@ -169,7 +169,7 @@ def dividend_saver(tickers):
         writer.save()
 
 
-import requests
+
 def tickers_from_market():
     # Definir el indice con el que se quiere trabajar, en este caso el mercado mexicano
     indx = 'MXX'

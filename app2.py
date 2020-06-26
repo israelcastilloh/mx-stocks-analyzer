@@ -56,8 +56,8 @@ tickers = ['^MXX',
            'PE&OLES.MX',
            'OMAB.MX']
 tickers.sort()
-#csv_saver(tickers)
-#dividend_saver(tickers)
+csv_saver(tickers)
+dividend_saver(tickers)
 
 header_table_color = '#555555'
 
