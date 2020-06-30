@@ -1,0 +1,4 @@
+pandas-datareader
+arch
+yfinance --upgrade --no-cache-dir
+dash
