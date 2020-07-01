@@ -3,70 +3,66 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import yfinance as yf
-import datetime
 import plotly.graph_objs as go
 import pandas as pd
-# from dateutil.relativedelta import relativedelta
-from utils import tickers_from_market, download_prices, dividends, update_prices
-# from dash.dependencies import Output, Input
 import dash_table as dt
 from plotly.subplots import make_subplots
 import numpy as np
 from arch import arch_model
-# from openpyxl import load_workbook
-# import openpyxl
 import plotly.io as pio
-from datetime import date
-import pickle
+from Tickers_and_prices import prices_from_index, update_prices, dividend_download
 
 pio.templates
 pd.core.common.is_list_like = pd.api.types.is_list_like
-# from utils import dividends_splits, get_values, market_tail, \
-# csv_saver, dividend_saver, tickers_from_market, download_prices, dividends
-# import xlrd
-# import plotly.express as px
 
 
-today = date.today()
+indx = "MXX"
+# User input. For Mexico use MXX, for any index use an ETF that replicates it, i.e. SPY
+ventana = 365 * 5  # User input, maybe
+tickers, historicos, closes = prices_from_index(indx, ventana)
+tickers, historicos, closes = update_prices(indx, ventana)
 
-indx = 'MXX'
-tickers = tickers_from_market(indx)
+if indx == 'MXX':
+    mercado = closes['^' + indx]
+    dividendos = dividend_download(tickers)
+else:
+    mercado = closes[indx]
+    dividendos = {}
+for ticker in tickers:
+    try:
+        y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
+        y.reset_index(level=0, inplace=True)
+        y = y.sort_values(by='Date', ascending=False)
+        dividendos[ticker] = y
+    except:
+        pass
 
-ventana = 365 * 5
-inicio = today - datetime.timedelta(ventana)
-try:
-    historicos = pickle.load(open('save.p', 'rb'))
-    tickers = list(historicos.keys())
-    closes = pd.DataFrame(columns=tickers)
-    for ticker in tickers:
-        closes[ticker] = historicos[ticker]['Adj Close']
-except:
-    historicos, closes = download_prices(tickers, inicio)
+#
 
-historicos, closes = update_prices()
-tickers = list(historicos.keys())
-mercado = closes['^' + indx]
-normalizados = pd.DataFrame(np.dot(closes, np.diagflat(1 / closes[:1].values)), columns=closes.columns,
-                            index=closes.index)
-merc_norm = pd.DataFrame(1 / mercado.iloc[0] * mercado)
-dividendos = dividends(tickers)
+
 tickers.sort()
+
+# %%
 header_table_color = '#555555'
-fontsize = '25px'
+fontsize = '20px'
 fontsize_titles = '35px'
-title_side_width = '25%' #change these to fit the titles to a centered position
-table_side_width = '16%' #change these to fit the titles to a centered position
+title_side_width = '25%'  # change these to fit the titles to a centered position
+table_side_width = '16%'  # change these to fit the titles to a centered position
 hovertext_size = 22
 
 app = dash.Dash()
 app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111111"}, children=[
 
     html.Div([
-        html.H1(children="BMV - Stock Analyzer",
-                style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize_titles,
-                        'display': 'center-block', 'position': 'relative', 'align': 'center', 'left': title_side_width,
-                        'padding-left': '0px', 'padding-bottom': '80px', 'width': '1600px',
-                       'color': 'white', 'text-decoration': 'underline',  'bottom': 0, 'right': 0}),
+
+        dcc.Input(id="input-index", placeholder="MXX"),
+
+        html.H1(children=indx + " - Stock Analyzer",
+                style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
+                       'font-size': fontsize_titles,
+                       'display': 'center-block', 'position': 'relative', 'align': 'center', 'left': title_side_width,
+                       'padding-left': '0px', 'padding-bottom': '80px', 'width': '1600px',
+                       'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
 
         html.Div(id='market_table',
                  style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
@@ -75,7 +71,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
 
     ]),
 
-    dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value='AC.MX',
+    dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value=tickers[0],
                  style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
                         'vertical-align': 'middle', 'font-size': fontsize}),
 
@@ -86,12 +82,10 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
                     'display': 'center-block', 'position': 'relative', 'align': 'center',
                     'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px', 'bottom': 0, 'right': 0}),
 
-
     html.Div(id='info_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
                     'display': 'inline-block', 'position': 'relative', 'align': 'right', 'left': table_side_width,
                     'padding-left': '0px', 'padding-bottom': '80px', 'width': '1000px', 'bottom': 0, 'right': 0}),
-
 
     html.Div(id='dividend_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
@@ -121,17 +115,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
                                {'label': '2Y', 'value': 252 * 2},
                                {'label': '5Y', 'value': 252 * 5}
                            ], value=252)
-
-            # html.H3(children="Returns of Asset over Time",
-            #         style={'display': 'center-block', 'font-family': 'verdana', 'padding-left': '120px',
-            #                'padding-bottom': '00px', 'color': 'white', 'display': 'inline-block'}),
-            #
-            # html.H3(children="Distribution of Returns",
-            #         style={'display': 'center-block', 'font-family': 'verdana', 'padding-left': '850px',
-            #                'padding-bottom': '0px', 'color': 'white', 'display': 'inline-block',
-            #                'position': 'relative'}),
         ]),
-
 
         html.Div(dcc.Graph(id="return-figure", style={'font-family': 'verdana', 'display': 'center-block',
                                                       'padding-left': '30px', 'padding-top': '1px',
@@ -181,7 +165,6 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
     ])
 ])
 
-
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def market_table(input_value):
@@ -194,9 +177,10 @@ def market_table(input_value):
         last_two_change = last_two.pct_change()
         for col in columns:
             prices.loc[ticker, col] = round(x[col][0], 4)
-        prices.loc[ticker, "Chg. Close"] = str(round(last_two_change.iloc[-1][-1] * 100, 2)) + str('%')
-        prices.loc[ticker, "Chg. Volume"] = str(round(last_two_change.iloc[-1][-2] * 100, 2)) + str('%')
+        prices.loc[ticker, "Chg. Close"] = str(round(last_two_change.Close[-1] * 100, 2)) + str('%')
+        prices.loc[ticker, "Chg. Volume"] = str(round(last_two_change.Volume[-1] * 100, 2)) + str('%')
         prices.append(prices)
+        prices = prices.round(2)
         prices = prices.rename_axis("Company")
     prices.reset_index(level=0, inplace=True)
     data = prices.to_dict("rows")
@@ -337,12 +321,14 @@ def update_returns_figure(input_value, window_value):
     normalized = pd.DataFrame(columns=['Date', "Normalized Returns"])
     normalized['Date'] = price_data['Date']
     normalized['Normalized Returns'] = (price_data['Adj Close'] / price_data['Adj Close'][:1].values) - 1
-
-    market_prices = historicos['^MXX'].copy().tail(window_value)
+    if indx == 'MXX':
+        market_prices = historicos['^' + indx].copy().tail(window_value)
+    else:
+        market_prices = historicos[indx].copy().tail(window_value)
     market_prices.reset_index(level=0, inplace=True)
     market = pd.DataFrame(columns=['Date', "Normalized Returns"])
     market['Date'] = market_prices['Date']
-    market['Normalized Returns'] = (market_prices['Close'] / market_prices['Close'][:1].values) - 1
+    market['Normalized Returns'] = (market_prices['Adj Close'] / market_prices['Adj Close'][:1].values) - 1
 
     trace_returns_figure = go.Figure()
     trace_returns_figure.add_trace(go.Scatter(x=normalized['Date'], y=(normalized['Normalized Returns']),
@@ -350,7 +336,7 @@ def update_returns_figure(input_value, window_value):
                                               marker_line_color="blue"))
 
     trace_returns_figure.add_trace(go.Scatter(x=market['Date'], y=(market['Normalized Returns']),
-                                              name="Market Returns", marker_line_width=2,
+                                              name=str(indx) + " Returns", marker_line_width=2,
                                               marker_line_color="red"))
     trace_returns_figure.update_layout(showlegend=False, yaxis_title="Return", title="Historical Returns")
 
@@ -536,7 +522,7 @@ def update_correlation_figure(input_value, window_value):
                              mode='lines',
                              name='Year'))
 
-    fig.layout.update(height=600, title=str(input_value) + " Correlation Windows with Market Index",
+    fig.layout.update(height=600, title=(str(input_value) + ' vs. ' + str(indx) + ' Correlation Windows'),
                       yaxis_title="Correlation", showlegend=True, yaxis_tickformat='.2',
                       yaxis=dict(range=[-1, 1]), hoverlabel=dict(font=dict(size=hovertext_size)),
                       xaxis=dict(rangeselector=dict(bgcolor='#000000',
