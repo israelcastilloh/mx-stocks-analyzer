@@ -73,7 +73,8 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                         'display': 'center-block', 'position': 'relative', 'align': 'center', 'width': '90%',
                         'padding-left': '0px', 'padding-bottom': '80px', 'bottom': 0, 'right': 0}),
 
-        dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value=tickers[0],
+        dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers],
+                     value=tickers[np.random.randint(0, len(tickers))],
                      style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
                             'vertical-align': 'middle', 'font-size': fontsize}),
 
