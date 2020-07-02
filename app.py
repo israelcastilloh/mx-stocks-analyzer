@@ -44,17 +44,18 @@ tickers.sort()
 
 # %%
 header_table_color = '#555555'
-fontsize = '24px'
+fontsize = '18px'
 fontsize_titles = '35px'
-title_side_width = '25%'  # change these to fit the titles to a centered position
-table_side_width = '16%'  # change these to fit the titles to a centered position
+title_side_width = '32%'  # change these to fit the titles to a centered position
+table_side_width = '2.5%'  # change these to fit the titles to a centered position
 hovertext_size = 24
 
 app = dash.Dash()
 server = app.server ##Heroku deployment
 
 app.title = 'PAP Stock Analyzer'
-app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111111"}, children=[
+app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px",
+                             "border-color": "#111111",  'margin': 0}, children=[
 
     html.Div([
 
@@ -62,15 +63,15 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
                 style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
                        'font-size': fontsize_titles,
                        'display': 'center-block', 'position': 'relative', 'align': 'center', 'left': title_side_width,
-                       'padding-left': '0px', 'padding-bottom': '80px', 'width': '1600px',
+                       'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px',
                        'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
 
     ]), html.Div([
 
         html.Div(id='market_table',
                  style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                        'display': 'center-block', 'position': 'relative', 'align': 'center',
-                        'padding-left': '0px', 'padding-bottom': '80px', 'width': '2000px', 'bottom': 0, 'right': 0}),
+                        'display': 'center-block', 'position': 'relative', 'align': 'center', 'width': '90%',
+                        'padding-left': '0px', 'padding-bottom': '80px', 'bottom': 0, 'right': 0}),
 
         dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value=tickers[0],
                      style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
@@ -81,18 +82,18 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
 
     html.Div(id='today_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'center-block', 'position': 'relative', 'align': 'center',
-                    'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px', 'bottom': 0, 'right': 0}),
+                    'display': 'center-block', 'position': 'relative', 'align': 'center', 'width': '60%',
+                    'padding-left': '0px', 'padding-bottom': '20px', 'bottom': 0, 'right': 0}),
 
     html.Div(id='info_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'inline-block', 'position': 'relative', 'align': 'right', 'left': table_side_width,
-                    'padding-left': '0px', 'padding-bottom': '80px', 'width': '1000px', 'bottom': 0, 'right': 0}),
+                    'display': 'inline-block', 'position': 'relative', 'align': 'left', 'left': table_side_width,
+                    'padding-left': '10px', 'padding-bottom': '40px', 'bottom': 0, 'right': 0, "width": "60%"}),
 
     html.Div(id='dividend_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'inline-block', 'position': 'relative', 'align': 'right', 'left': table_side_width,
-                    'padding-left': '10px', 'padding-bottom': '80px', 'width': '650px', 'bottom': 0, 'right': 0}),
+                    'display': 'inline-block', 'position': 'relative', 'align': 'left', 'left': table_side_width,
+                    'padding-left': '20px', 'padding-bottom': '40px', 'bottom': 0, 'right': 0, "width": "30%"}),
 
     html.Div([
 
@@ -101,7 +102,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
                     style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
                            'font-size': fontsize_titles,
                            'display': 'center-block', 'position': 'relative', 'align': 'center',
-                           'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px', 'left': title_side_width,
+                           'padding-left': '0px', 'padding-bottom': '30px', 'width': '1600px', 'left': title_side_width,
                            'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
 
             dcc.RadioItems(id="window-checker", style={"padding-left": "80px", "padding-bottom": "20px",
@@ -125,8 +126,8 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
 
         html.Div(id='stat_table',
                  style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                        'width': '1000px', 'display': 'center-block', 'align': 'center', 'vertical-align': 'top',
-                        'padding-left': '80px', 'padding-top': '20px', 'padding-bottom': '50px',
+                        'width': '60%', 'display': 'center-block', 'align': 'center', 'vertical-align': 'top',
+                        'padding-left': '50px', 'padding-top': '10px', 'padding-bottom': '40px',
                         'position': 'relative'}),
 
         html.Div([
@@ -190,9 +191,10 @@ def market_table(input_value):
     columns = [{"name": i, "id": i, } for i in prices.columns]
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
-                        style_as_list_view=True, style_header={'fontWeight': 'bold',
+                        style_as_list_view=True, sort_action='native',
+                        style_header={'fontWeight': 'bold',
                                                                'backgroundColor': header_table_color},
-                        style_table={'height': '400px', 'overflowY': 'auto'})
+                        style_table={'height': '300px', 'overflowY': 'auto'})
 
 
 @app.callback(dash.dependencies.Output('graph_close', 'figure'),
@@ -303,8 +305,8 @@ def update_today_data(input_value):
     today_table = pd.DataFrame(index=[''])
     for col in x.columns[:-1]:
         today_table[col] = round(x[col][0], 2)
-    today_table["Chg. Close"] = str(round(last_two_change.iloc[-1][-1] * 100, 2)) + str('%')
-    today_table["Chg. Volume"] = str(round(last_two_change.iloc[-1][-2] * 100, 2)) + str('%')
+    today_table["Chg. Close"] = str(round(last_two_change.iloc[-1][6] * 100, 2)) + str('%')
+    today_table["Chg. Volume"] = str(round(last_two_change.iloc[-1][5] * 100, 2)) + str('%')
     data = today_table.to_dict("rows")
     columns = [{"name": i, "id": i, } for i in today_table.columns]
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
@@ -577,8 +579,18 @@ def update_info(input_value):
     y.loc["marketCap"] = '$' + (y.loc["marketCap"].astype(float) / 1000000).round(2).astype(str) + 'MM'
     info_df = y.loc[["shortName", "sector", "industry", "country", "marketCap",
                      "exchange", "exchangeTimezoneShortName", "market", "currency", "beta", "fiftyTwoWeekHigh",
-                     "fiftyTwoWeekLow", "dividendYield", "trailingAnnualDividendYield", "trailingEps", "forwardEps",
+                     "fiftyTwoWeekHigh", "dividendYield", "trailingAnnualDividendYield", "trailingEps", "forwardEps",
                      "trailingPE", "forwardPE", "priceToBook"]]
+    info_df = info_df.rename({'shortName': 'Name', 'sector': 'Sector', 'industry': 'Industry',
+                              'country': 'Country', 'marketCap': 'Market Cap', 'exchange': 'Exchange',
+                              'exchangeTimezoneShortName': 'Timezone', 'market': 'Market',
+                              'currency': 'Currency', 'beta': 'Beta',
+                              'dividendYield': 'Dividend Yield', 'fiftyTwoWeekHigh': '52-week High',
+                              'trailingAnnualDividendYield': 'Trailing Annual Div. Yield',
+                              'trailingEps': 'Trailing EPS', 'forwardEps': 'Forward EPS',
+                              'trailingPE': 'Trailing PE', 'forwardPE': 'Forward PE',
+                              'priceToBook': 'Price to Book'}, axis=0)
+
     info_df.index.names = [input_value]
     info_df = info_df.rename({0: 'Info'}, axis=1)
     info_df.reset_index(level=0, inplace=True)
