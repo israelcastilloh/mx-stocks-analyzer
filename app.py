@@ -15,6 +15,8 @@ from Tickers_and_prices import prices_from_index, update_prices, dividend_downlo
 pio.templates
 pd.core.common.is_list_like = pd.api.types.is_list_like
 
+##### input ---> input usuario
+# print(globals()['indx']) --> check later
 
 indx = "MXX"
 # User input. For Mexico use MXX, for any index use an ETF that replicates it, i.e. SPY
@@ -37,25 +39,24 @@ for ticker in tickers:
     except:
         pass
 
-#
-
-
 tickers.sort()
+#######
 
 # %%
 header_table_color = '#555555'
-fontsize = '20px'
+fontsize = '24px'
 fontsize_titles = '35px'
 title_side_width = '25%'  # change these to fit the titles to a centered position
 table_side_width = '16%'  # change these to fit the titles to a centered position
-hovertext_size = 22
+hovertext_size = 24
 
 app = dash.Dash()
+server = app.server ##Heroku deployment
+
+app.title = 'PAP Stock Analyzer'
 app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111111"}, children=[
 
     html.Div([
-
-        dcc.Input(id="input-index", placeholder="MXX"),
 
         html.H1(children=indx + " - Stock Analyzer",
                 style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
@@ -64,18 +65,19 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
                        'padding-left': '0px', 'padding-bottom': '80px', 'width': '1600px',
                        'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
 
+    ]), html.Div([
+
         html.Div(id='market_table',
                  style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
                         'display': 'center-block', 'position': 'relative', 'align': 'center',
-                        'padding-left': '0px', 'padding-bottom': '80px', 'width': '2000px', 'bottom': 0, 'right': 0})
+                        'padding-left': '0px', 'padding-bottom': '80px', 'width': '2000px', 'bottom': 0, 'right': 0}),
 
+        dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value=tickers[0],
+                     style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
+                            'vertical-align': 'middle', 'font-size': fontsize}),
+
+        html.Div(dcc.Graph(id="graph_close"))
     ]),
-
-    dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers], value=tickers[0],
-                 style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
-                        'vertical-align': 'middle', 'font-size': fontsize}),
-
-    html.Div(dcc.Graph(id="graph_close")),
 
     html.Div(id='today_table',
              style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
@@ -165,6 +167,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-color": "#111
     ])
 ])
 
+
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def market_table(input_value):
@@ -207,7 +210,7 @@ def update_fig(input_value):
                                                        open=price_data['Open'],
                                                        high=price_data['High'],
                                                        low=price_data['Low'],
-                                                       close=price_data['Close']),
+                                                       close=price_data['Close'], name=(str(input_value))),
                                         go.Scatter(x=df.index, y=df.MA1, line=dict(color='orange', width=2),
                                                    name="MA %i" % MA_1),
                                         go.Scatter(x=df.index, y=df.MA2, line=dict(color='green', width=2),

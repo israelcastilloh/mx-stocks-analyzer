@@ -1,4 +1,6 @@
 pandas-datareader
 arch
-yfinance --upgrade --no-cache-dir
+yfinance
 dash
+numpy
+plotly
