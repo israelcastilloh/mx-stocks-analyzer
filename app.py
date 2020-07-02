@@ -501,12 +501,12 @@ def update_correlation_figure(input_value, window_value):
     both_closes[indx] = market_closes
     both_closes = both_closes.pct_change().dropna(axis=0)
     # Ventanas de Correlacion
-    corr_mov_5 = pd.DataFrame(both_closes[str(input_value)].rolling(5).corr(both_closes[indx]).dropna())
-    corr_mov_15 = pd.DataFrame(both_closes[str(input_value)].rolling(10).corr(both_closes[indx]).dropna())
-    corr_mov_20 = pd.DataFrame(both_closes[str(input_value)].rolling(20).corr(both_closes[indx]).dropna())
-    corr_mov_90 = pd.DataFrame(both_closes[str(input_value)].rolling(60).corr(both_closes[indx]).dropna())
-    corr_mov_180 = pd.DataFrame(both_closes[str(input_value)].rolling(126).corr(both_closes[indx]).dropna())
-    corr_mov_365 = pd.DataFrame(both_closes[str(input_value)].rolling(252).corr(both_closes[indx]).dropna())
+    corr_mov_5 = pd.DataFrame(round(both_closes[str(input_value)].rolling(5).corr(both_closes[indx]).dropna()),4)
+    corr_mov_15 = pd.DataFrame(round(both_closes[str(input_value)].rolling(10).corr(both_closes[indx]).dropna()),4)
+    corr_mov_20 = pd.DataFrame(round(both_closes[str(input_value)].rolling(20).corr(both_closes[indx]).dropna()),4)
+    corr_mov_90 = pd.DataFrame(round(both_closes[str(input_value)].rolling(60).corr(both_closes[indx]).dropna()),4)
+    corr_mov_180 = pd.DataFrame(round(both_closes[str(input_value)].rolling(126).corr(both_closes[indx]).dropna()),4)
+    corr_mov_365 = pd.DataFrame(round(both_closes[str(input_value)].rolling(252).corr(both_closes[indx]).dropna()),4)
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=corr_mov_5.index, y=corr_mov_5[0],
