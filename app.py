@@ -2,6 +2,7 @@ from __future__ import print_function
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
 import yfinance as yf
 import plotly.graph_objs as go
 import pandas as pd
@@ -15,11 +16,10 @@ from html_style import tab_style, selected_tab_style, stock_analyzer_titles, sug
     multi_table_styler
 
 
-
 def initializer_stock_analysis(input_value):
+    global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
     indx = input_value
-    ventana = 365 * 5  # User input, maybe
-    global historicos, closes, mercado, dividendos
+    ventana = 365 * 5.1  # User input, maybe
     tickers, historicos, closes = prices_from_index(indx, ventana)
     tickers, historicos, closes = update_prices(indx, ventana)
     if indx == 'MXX':
@@ -32,7 +32,7 @@ def initializer_stock_analysis(input_value):
         index_name = yf.Ticker(indx)
 
     j = pd.DataFrame.from_dict(index_name.info, orient='index')
-    initializer_stock_analysis.index_df = str(j.loc["shortName"].values).strip("[]")
+    index_df = str(j.loc["shortName"].values).strip("[]")
     for ticker in tickers:
         try:
             y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
@@ -55,27 +55,27 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                              "border-color": "#111111", 'margin': 0}, children=[
     dcc.Tabs([
 
-        dcc.Tab(label='Stocks Analysis', style=tab_style(), selected_style=selected_tab_style(), children=[
-
-            html.Div([
-                html.H1(children=initializer_stock_analysis.index_df + " Market Components",
+        dcc.Tab(label="Stocks Analysis", style=tab_style(), selected_style=selected_tab_style(), children=[
+            # html.Div([
+            #     dcc.Input(id='etf-input', value="MXX", type="text"),
+            #     html.Button(id="submit-button", n_clicks=0, children="submit")
+            #     ]),
+            html.Div(id='stock-analyzer', children=[
+                html.H1(children=globals()["index_df"] + " Market Components",
                         style=stock_analyzer_titles()),
-            ]),
-
-            html.Div([
 
                 html.Div(id='market_table',
                          style=tables_styler('90%')),
 
+            html.Div([
                 dcc.Dropdown(id='drop-down-tickers',
-                             options=[{'label': i, 'value': i} for i in initializer_stock_analysis.tickers],
-                             value=initializer_stock_analysis.tickers[np.random.randint(0,
-                                                                len(initializer_stock_analysis.tickers))],
+                             options=[{'label': i, 'value': i} for i in tickers],
+                             value=tickers[np.random.randint(0, len(tickers))],
                              style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
-
-                html.Div(dcc.Graph(id="graph_close"))
             ]),
+
+            html.Div(dcc.Graph(id="graph_close")),
 
             html.Div(id='today_table',
                      style=tables_styler('60%')),
@@ -130,6 +130,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                                style={'font-family': 'verdana', 'display': 'center-block',
                                       'padding-left': '30px',
                                       'padding-bottom': '30px'}))
+        ])
         ]),
         dcc.Tab(label='Tab Test', style=tab_style(), selected_style=selected_tab_style(), children=[])
     ])
@@ -139,9 +140,40 @@ header_table_color = '#555555'
 fontsize_titles = '35px'
 hovertext_size = 24
 
-tickers = initializer_stock_analysis.tickers
-historicos = initializer_stock_analysis.historicos
-indx = initializer_stock_analysis.indx
+# @app.callback(
+#     Output('stock-analyzer', 'children'),
+#     [Input('etf-input', 'value')],
+#     [State('submit-button', 'n_clicks')])
+# def initializer_stock_analysis(input_value):
+#     global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
+#     indx = input_value
+#     ventana = 365 * 5  # User input, maybe
+#     tickers, historicos, closes = prices_from_index(indx, ventana)
+#     tickers, historicos, closes = update_prices(indx, ventana)
+#     if indx == 'MXX':
+#         mercado = closes['^' + indx]
+#         dividendos = dividend_download(tickers)
+#         index_name = yf.Ticker('^' + indx)
+#     else:
+#         mercado = closes[indx]
+#         dividendos = {}
+#         index_name = yf.Ticker(indx)
+#
+#     j = pd.DataFrame.from_dict(index_name.info, orient='index')
+#     index_df = str(j.loc["shortName"].values).strip("[]")
+#     for ticker in tickers:
+#         try:
+#             y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
+#             y.reset_index(level=0, inplace=True)
+#             y = y.sort_values(by='Date', ascending=False)
+#             dividendos[ticker] = y
+#         except:
+#             pass
+#     tickers.sort()
+
+#tickers = initializer_stock_analysis.tickers
+#historicos = initializer_stock_analysis.historicos
+#indx = initializer_stock_analysis.indx
 
 
 @app.callback(dash.dependencies.Output('market_table', 'children'),
