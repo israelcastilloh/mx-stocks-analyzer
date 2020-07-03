@@ -11,164 +11,135 @@ import numpy as np
 from arch import arch_model
 import plotly.io as pio
 from Tickers_and_prices import prices_from_index, update_prices, dividend_download
+from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
+    multi_table_styler
 
-pio.templates
-pd.core.common.is_list_like = pd.api.types.is_list_like
 
-##### input ---> input usuario
-# print(globals()['indx']) --> check later
+def initializer_stock_analysis(indx):
+    ventana = 365 * 5  # User input, maybe
+    global historicos, closes, mercado, dividendos
+    tickers, historicos, closes = prices_from_index(indx, ventana)
+    tickers, historicos, closes = update_prices(indx, ventana)
+    if indx == 'MXX':
+        mercado = closes['^' + indx]
+        dividendos = dividend_download(tickers)
+        index_name = yf.Ticker('^' + indx)
+    else:
+        mercado = closes[indx]
+        dividendos = {}
+        index_name = yf.Ticker(indx)
 
-indx = "MXX"
-# User input. For Mexico use MXX, for any index use an ETF that replicates it, i.e. SPY
-ventana = 365 * 5  # User input, maybe
-tickers, historicos, closes = prices_from_index(indx, ventana)
-tickers, historicos, closes = update_prices(indx, ventana)
+    j = pd.DataFrame.from_dict(index_name.info, orient='index')
+    initializer_stock_analysis.index_df = str(j.loc["shortName"].values).strip("[]")
+    for ticker in tickers:
+        try:
+            y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
+            y.reset_index(level=0, inplace=True)
+            y = y.sort_values(by='Date', ascending=False)
+            dividendos[ticker] = y
+        except:
+            pass
+    initializer_stock_analysis.historicos = historicos
+    initializer_stock_analysis.tickers = tickers
+    initializer_stock_analysis.tickers.sort()
+    initializer_stock_analysis.indx = indx
 
-if indx == 'MXX':
-    mercado = closes['^' + indx]
-    dividendos = dividend_download(tickers)
-else:
-    mercado = closes[indx]
-    dividendos = {}
-for ticker in tickers:
-    try:
-        y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
-        y.reset_index(level=0, inplace=True)
-        y = y.sort_values(by='Date', ascending=False)
-        dividendos[ticker] = y
-    except:
-        pass
-
-tickers.sort()
-#######
-
-# %%
-header_table_color = '#555555'
-fontsize = '18px'
-fontsize_titles = '35px'
-title_side_width = '32%'  # change these to fit the titles to a centered position
-table_side_width = '2.5%'  # change these to fit the titles to a centered position
-hovertext_size = 24
+initializer_stock_analysis("MXX") # ADD ETF's
 
 app = dash.Dash()
-server = app.server ##Heroku deployment
+server = app.server
 
 app.title = 'PAP Stock Analyzer'
 app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px",
-                             "border-color": "#111111",  'margin': 0}, children=[
+                             "border-color": "#111111", 'margin': 0}, children=[
+    dcc.Tabs([
 
-    html.Div([
+        dcc.Tab(label='Stocks Analysis', style=tab_style(), selected_style=selected_tab_style(), children=[
 
-        html.H1(children=indx + " - Stock Analyzer",
-                style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
-                       'font-size': fontsize_titles,
-                       'display': 'center-block', 'position': 'relative', 'align': 'center', 'left': title_side_width,
-                       'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px',
-                       'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
+            html.Div([
+                html.H1(children=initializer_stock_analysis.index_df + " Market Components",
+                        style=stock_analyzer_titles()),
+            ]),
 
-    ]), html.Div([
+            html.Div([
 
-        html.Div(id='market_table',
-                 style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                        'display': 'center-block', 'position': 'relative', 'align': 'center', 'width': '90%',
-                        'padding-left': '0px', 'padding-bottom': '80px', 'bottom': 0, 'right': 0}),
+                html.Div(id='market_table',
+                         style=tables_styler('90%')),
 
-        dcc.Dropdown(id='drop-down-tickers', options=[{'label': i, 'value': i} for i in tickers],
-                     value=tickers[np.random.randint(0, len(tickers))],
-                     style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
-                            'vertical-align': 'middle', 'font-size': fontsize}),
+                dcc.Dropdown(id='drop-down-tickers',
+                             options=[{'label': i, 'value': i} for i in initializer_stock_analysis.tickers],
+                             value=initializer_stock_analysis.tickers[np.random.randint(0,
+                                                                len(initializer_stock_analysis.tickers))],
+                             style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
+                                    'vertical-align': 'middle', 'font-size': fontsize}),
 
-        html.Div(dcc.Graph(id="graph_close"))
-    ]),
+                html.Div(dcc.Graph(id="graph_close"))
+            ]),
 
-    html.Div(id='today_table',
-             style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'center-block', 'position': 'relative', 'align': 'center', 'width': '60%',
-                    'padding-left': '0px', 'padding-bottom': '20px', 'bottom': 0, 'right': 0}),
+            html.Div(id='today_table',
+                     style=tables_styler('60%')),
 
-    html.Div(id='info_table',
-             style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'inline-block', 'position': 'relative', 'align': 'left', 'left': table_side_width,
-                    'padding-left': '10px', 'padding-bottom': '40px', 'bottom': 0, 'right': 0, "width": "60%"}),
+            html.Div(id='info_table',
+                     style=multi_table_styler('2.5%', '60%')),
 
-    html.Div(id='dividend_table',
-             style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                    'display': 'inline-block', 'position': 'relative', 'align': 'left', 'left': table_side_width,
-                    'padding-left': '20px', 'padding-bottom': '40px', 'bottom': 0, 'right': 0, "width": "30%"}),
+            html.Div(id='dividend_table',
+                     style=multi_table_styler('2.5%', '30%')),
 
-    html.Div([
+            html.Div([
+                html.H2(children="Daily Return Analysis", style=stock_analyzer_titles()),
+            ]),
 
-        html.Div([
-            html.H2(children="Daily Return Analysis",
-                    style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
-                           'font-size': fontsize_titles,
-                           'display': 'center-block', 'position': 'relative', 'align': 'center',
-                           'padding-left': '0px', 'padding-bottom': '30px', 'width': '1600px', 'left': title_side_width,
-                           'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
+            html.Div([
+                dcc.RadioItems(id="window-checker", style={"padding-left": "80px", "padding-bottom": "20px",
+                                                           'display': 'block',
+                                                           'font-family': 'verdana', 'color': 'white'},
+                               options=[
+                                   {'label': 'W', 'value': 5},
+                                   {'label': '2W', 'value': 10},
+                                   {'label': '1M', 'value': 20},
+                                   {'label': 'Q', 'value': 63},
+                                   {'label': '6M', 'value': 126},
+                                   {'label': 'Y', 'value': 252},
+                                   {'label': '2Y', 'value': 252 * 2},
+                                   {'label': '5Y', 'value': 252 * 5}
+                               ], value=252)
+            ]),
 
-            dcc.RadioItems(id="window-checker", style={"padding-left": "80px", "padding-bottom": "20px",
-                                                       'display': 'block',
-                                                       'font-family': 'verdana', 'color': 'white'},
-                           options=[
-                               {'label': 'W', 'value': 5},
-                               {'label': '2W', 'value': 10},
-                               {'label': '1M', 'value': 20},
-                               {'label': 'Q', 'value': 63},
-                               {'label': '6M', 'value': 126},
-                               {'label': 'Y', 'value': 252},
-                               {'label': '2Y', 'value': 252 * 2},
-                               {'label': '5Y', 'value': 252 * 5}
-                           ], value=252)
+            html.Div(
+                dcc.Graph(id="return-figure", style={'font-family': 'verdana', 'display': 'center-block',
+                                                     'padding-left': '30px'})),
+
+            html.Div(id='stat_table', style=tables_styler('60%')),
+
+            html.Div([
+                html.H2(children="Volatility Analysis", style=stock_analyzer_titles()),
+                html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
+            ]),
+
+            html.Div(dcc.Graph(id="volatility-figure",
+                               style={'font-family': 'verdana', 'display': 'center-block',
+                                      'padding-left': '30px'})),
+
+            html.Div([
+                html.H2(children="Index Correlation Analysis", style=stock_analyzer_titles()),
+                html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
+            ]),
+
+            html.Div(dcc.Graph(id="correlation-figure",
+                               style={'font-family': 'verdana', 'display': 'center-block',
+                                      'padding-left': '30px',
+                                      'padding-bottom': '30px'}))
         ]),
-
-        html.Div(dcc.Graph(id="return-figure", style={'font-family': 'verdana', 'display': 'center-block',
-                                                      'padding-left': '30px', 'padding-top': '1px',
-                                                      'padding-bottom': '0px'})),
-
-        html.Div(id='stat_table',
-                 style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto', 'font-size': fontsize,
-                        'width': '60%', 'display': 'center-block', 'align': 'center', 'vertical-align': 'top',
-                        'padding-left': '50px', 'padding-top': '10px', 'padding-bottom': '40px',
-                        'position': 'relative'}),
-
-        html.Div([
-            html.H2(children="Volatility Analysis",
-                    style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
-                           'font-size': fontsize_titles,
-                           'display': 'center-block', 'position': 'relative', 'align': 'center',
-                           'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px', 'left': title_side_width,
-                           'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
-
-            html.H3(children="Click on graph legend to hide/show line",
-                    style={'display': 'center-block', 'font-family': 'verdana', 'padding-left': '120px',
-                           'padding-bottom': '00px', 'color': 'white', 'display': 'inline-block'}),
-
-        ]),
-
-        html.Div(dcc.Graph(id="volatility-figure", style={'font-family': 'verdana', 'display': 'center-block',
-                                                          'padding-left': '30px', 'padding-top': '0px',
-                                                          'padding-bottom': '0px'})),
-
-        html.Div([
-            html.H2(children="Index Correlation Analysis",
-                    style={'font-family': 'verdana', 'margin-left': 'auto', 'margin-right': 'auto',
-                           'font-size': fontsize_titles,
-                           'display': 'center-block', 'position': 'relative', 'align': 'center',
-                           'padding-left': '0px', 'padding-bottom': '40px', 'width': '1600px', 'left': title_side_width,
-                           'color': 'white', 'text-decoration': 'underline', 'bottom': 0, 'right': 0}),
-
-            html.H3(children="Click on graph legend to hide/show line",
-                    style={'display': 'center-block', 'font-family': 'verdana', 'padding-left': '120px',
-                           'padding-bottom': '00px', 'color': 'white', 'display': 'inline-block'}),
-
-        ]),
-
-        html.Div(dcc.Graph(id="correlation-figure", style={'font-family': 'verdana', 'display': 'center-block',
-                                                           'padding-left': '30px', 'padding-top': '0px',
-                                                           'padding-bottom': '30px'}))
+        dcc.Tab(label='Tab Test', style=tab_style(), selected_style=selected_tab_style(), children=[])
     ])
 ])
 
+header_table_color = '#555555'
+fontsize_titles = '35px'
+hovertext_size = 24
+tickers = initializer_stock_analysis.tickers
+historicos = initializer_stock_analysis.historicos
+indx = initializer_stock_analysis.indx
 
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
@@ -194,7 +165,7 @@ def market_table(input_value):
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, sort_action='native',
                         style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
+                                      'backgroundColor': header_table_color},
                         style_table={'height': '300px', 'overflowY': 'auto'})
 
 
@@ -202,6 +173,7 @@ def market_table(input_value):
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def update_fig(input_value):
     price_data = historicos[input_value]
+    print(price_data)
     # MA Graphs
     df = price_data.copy()
     MA_1 = 50
@@ -509,22 +481,22 @@ def update_correlation_figure(input_value, window_value):
     corr_mov_365 = pd.DataFrame(both_closes[str(input_value)].rolling(252).corr(both_closes[indx]).dropna())
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=corr_mov_5.index, y=round(corr_mov_5[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_5.index, y=round(corr_mov_5[0], 4),
                              mode='lines',
                              name='Week'))
-    fig.add_trace(go.Scatter(x=corr_mov_15.index, y=round(corr_mov_15[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_15.index, y=round(corr_mov_15[0], 4),
                              mode='lines',
                              name='2 Weeks'))
-    fig.add_trace(go.Scatter(x=corr_mov_20.index, y=round(corr_mov_20[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_20.index, y=round(corr_mov_20[0], 4),
                              mode='lines',
                              name='Month'))
-    fig.add_trace(go.Scatter(x=corr_mov_90.index, y=round(corr_mov_90[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_90.index, y=round(corr_mov_90[0], 4),
                              mode='lines',
                              name='Quarter'))
-    fig.add_trace(go.Scatter(x=corr_mov_180.index, y=round(corr_mov_180[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_180.index, y=round(corr_mov_180[0], 4),
                              mode='lines',
                              name='Semester'))
-    fig.add_trace(go.Scatter(x=corr_mov_365.index, y=round(corr_mov_365[0],4),
+    fig.add_trace(go.Scatter(x=corr_mov_365.index, y=round(corr_mov_365[0], 4),
                              mode='lines',
                              name='Year'))
 
