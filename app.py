@@ -15,7 +15,9 @@ from html_style import tab_style, selected_tab_style, stock_analyzer_titles, sug
     multi_table_styler
 
 
-def initializer_stock_analysis(indx):
+
+def initializer_stock_analysis(input_value):
+    indx = input_value
     ventana = 365 * 5  # User input, maybe
     global historicos, closes, mercado, dividendos
     tickers, historicos, closes = prices_from_index(indx, ventana)
@@ -43,8 +45,7 @@ def initializer_stock_analysis(indx):
     initializer_stock_analysis.tickers = tickers
     initializer_stock_analysis.tickers.sort()
     initializer_stock_analysis.indx = indx
-
-initializer_stock_analysis("MXX") # ADD ETF's
+initializer_stock_analysis("MXX")
 
 app = dash.Dash()
 server = app.server
@@ -137,9 +138,11 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
 header_table_color = '#555555'
 fontsize_titles = '35px'
 hovertext_size = 24
+
 tickers = initializer_stock_analysis.tickers
 historicos = initializer_stock_analysis.historicos
 indx = initializer_stock_analysis.indx
+
 
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
@@ -173,7 +176,6 @@ def market_table(input_value):
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def update_fig(input_value):
     price_data = historicos[input_value]
-    print(price_data)
     # MA Graphs
     df = price_data.copy()
     MA_1 = 50
