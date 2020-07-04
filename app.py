@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function
 import dash
 import dash_core_components as dcc
@@ -64,6 +65,11 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                 html.H1(children=globals()["index_df"] + " Market Components",
                         style=stock_analyzer_titles()),
 
+                html.P(closes.index[-1].strftime('%d-%b-%Y'),
+                       style={'font-family': 'verdana', 'color': 'white', 'width': '320px', 'left': '4%',
+                            'position': 'relative', 'align': 'left',
+                              'vertical-align': 'middle', 'font-size': fontsize, 'fontWeight': 'bold'}),
+
                 html.Div(id='market_table',
                          style=tables_styler('90%')),
 
@@ -71,7 +77,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                 dcc.Dropdown(id='drop-down-tickers',
                              options=[{'label': i, 'value': i} for i in tickers],
                              value=tickers[np.random.randint(0, len(tickers))],
-                             style={'font-family': 'verdana', 'width': '320px', 'padding-left': '80px',
+                             style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
             ]),
 
@@ -189,6 +195,10 @@ def market_table(input_value):
         for col in columns:
             prices.loc[ticker, col] = round(x[col][0], 4)
         prices.loc[ticker, "Chg. Close"] = str(round(last_two_change.Close[-1] * 100, 2)) + str('%')
+        if last_two_change.Close[-1] > 0:
+            prices.loc[ticker, ""] = '🟢️️'
+        else:
+            prices.loc[ticker, ""] = '🔴'
         prices.loc[ticker, "Chg. Volume"] = str(round(last_two_change.Volume[-1] * 100, 2)) + str('%')
         prices.append(prices)
         prices = prices.round(2)
@@ -313,6 +323,10 @@ def update_today_data(input_value):
     for col in x.columns[:-1]:
         today_table[col] = round(x[col][0], 2)
     today_table["Chg. Close"] = str(round(last_two_change.iloc[-1][6] * 100, 2)) + str('%')
+    if last_two_change.iloc[-1][6] > 0:
+        today_table[""] = '🟢️'
+    else:
+        today_table[""] = '🔴'
     today_table["Chg. Volume"] = str(round(last_two_change.iloc[-1][5] * 100, 2)) + str('%')
     data = today_table.to_dict("rows")
     columns = [{"name": i, "id": i, } for i in today_table.columns]
@@ -584,19 +598,29 @@ def update_info(input_value):
     x = ticker.info
     y = pd.DataFrame.from_dict(x, orient='index')
     y.loc["marketCap"] = '$' + (y.loc["marketCap"].astype(float) / 1000000).round(2).astype(str) + 'MM'
+    y.loc["floatShares"] = (y.loc["floatShares"].astype(float) / 1000000).round(2).astype(str) + 'MM'
+    y.loc["sharesOutstanding"] = (y.loc["sharesOutstanding"].astype(float) / 1000000).round(2).astype(str) + 'MM'
     info_df = y.loc[["shortName", "sector", "industry", "country", "marketCap",
                      "exchange", "exchangeTimezoneShortName", "market", "currency", "beta", "fiftyTwoWeekHigh",
-                     "fiftyTwoWeekHigh", "dividendYield", "trailingAnnualDividendYield", "trailingEps", "forwardEps",
-                     "trailingPE", "forwardPE", "priceToBook"]]
+                     "fiftyTwoWeekLow", "52WeekChange", "dividendYield", "trailingAnnualDividendYield", "trailingEps",
+                     "forwardEps",
+                     "trailingPE", "forwardPE", "priceToBook", "bookValue", "twoHundredDayAverage",
+                     "payoutRatio", "profitMargins",  "floatShares",
+                     "sharesOutstanding", "heldPercentInsiders"]]
     info_df = info_df.rename({'shortName': 'Name', 'sector': 'Sector', 'industry': 'Industry',
                               'country': 'Country', 'marketCap': 'Market Cap', 'exchange': 'Exchange',
                               'exchangeTimezoneShortName': 'Timezone', 'market': 'Market',
                               'currency': 'Currency', 'beta': 'Beta',
                               'dividendYield': 'Dividend Yield', 'fiftyTwoWeekHigh': '52-week High',
+                              "fiftyTwoWeekLow":"52-week Low",
                               'trailingAnnualDividendYield': 'Trailing Annual Div. Yield',
                               'trailingEps': 'Trailing EPS', 'forwardEps': 'Forward EPS',
                               'trailingPE': 'Trailing PE', 'forwardPE': 'Forward PE',
-                              'priceToBook': 'Price to Book'}, axis=0)
+                              'priceToBook': 'Price to Book', 'bookValue': 'Book Value',
+                              'twoHundredDayAverage': '200-day MA', 'payoutRatio': 'Payout Ratio',
+                              'profitMargins': 'Profit Margins', '52WeekChange': '52-week chg.',
+                              'floatShares': 'Float Shares', 'sharesOutstanding': 'Shares Outs.',
+                              "heldPercentInsiders": "Held % Insiders"}, axis=0)
 
     info_df.index.names = [input_value]
     info_df = info_df.rename({0: 'Info'}, axis=1)
