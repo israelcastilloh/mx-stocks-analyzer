@@ -200,6 +200,8 @@ def market_table(input_value):
         else:
             prices.loc[ticker, ""] = '🔴'
         prices.loc[ticker, "Chg. Volume"] = str(round(last_two_change.Volume[-1] * 100, 2)) + str('%')
+        prices.loc[ticker, "Volume"] = (prices.loc[ticker, "Volume"].astype(float) / 1000).round(2).\
+                                           astype(str) + 'M'
         prices.append(prices)
         prices = prices.round(2)
         prices = prices.rename_axis("Company")
@@ -328,6 +330,7 @@ def update_today_data(input_value):
     else:
         today_table[""] = '🔴'
     today_table["Chg. Volume"] = str(round(last_two_change.iloc[-1][5] * 100, 2)) + str('%')
+    today_table["Volume"] = (today_table["Volume"].astype(float) / 1000).round(2).astype(str) + 'M'
     data = today_table.to_dict("rows")
     columns = [{"name": i, "id": i, } for i in today_table.columns]
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
