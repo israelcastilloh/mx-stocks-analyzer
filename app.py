@@ -76,7 +76,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
             html.Div([
                 dcc.Dropdown(id='drop-down-tickers',
                              options=[{'label': i, 'value': i} for i in tickers],
-                             value=tickers['ALSEA.MX'],
+                             value=tickers[3],
                              style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
             ]),
