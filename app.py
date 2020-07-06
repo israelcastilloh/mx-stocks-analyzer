@@ -80,7 +80,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                              style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
             ]),
-
+            ## test
             html.Div(dcc.Graph(id="graph_close")),
 
             html.Div(id='today_table',
