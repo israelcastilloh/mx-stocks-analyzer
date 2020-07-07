@@ -42,11 +42,9 @@ def initializer_stock_analysis(input_value):
             dividendos[ticker] = y
         except:
             pass
-    initializer_stock_analysis.historicos = historicos
-    initializer_stock_analysis.tickers = tickers
-    initializer_stock_analysis.tickers.sort()
-    initializer_stock_analysis.indx = indx
-initializer_stock_analysis("SPY")
+    initializer_stock_analysis.closes = closes
+
+initializer_stock_analysis("MXX")
 
 app = dash.Dash()
 server = app.server
@@ -65,10 +63,10 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                 html.H1(children=globals()["index_df"] + " Market Components",
                         style=stock_analyzer_titles()),
                 #
-                # html.P(closes.index[-1].strftime('%d-%b-%Y'),
-                #        style={'font-family': 'verdana', 'color': 'white', 'width': '320px', 'left': '4%',
-                #             'position': 'relative', 'align': 'left',
-                #               'vertical-align': 'middle', 'font-size': fontsize, 'fontWeight': 'bold'}),
+                html.P(initializer_stock_analysis.closes.index[-1].strftime('%d-%b-%Y'),
+                       style={'font-family': 'verdana', 'color': 'white', 'width': '320px', 'left': '4%',
+                            'position': 'relative', 'align': 'left',
+                              'vertical-align': 'middle', 'font-size': fontsize, 'fontWeight': 'bold'}),
 
                 html.Div(id='market_table',
                          style=tables_styler('90%')),
