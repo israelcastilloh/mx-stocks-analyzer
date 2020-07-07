@@ -210,7 +210,7 @@ def market_table(input_value):
     columns = [{"name": i, "id": i, } for i in prices.columns]
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
-                        style_as_list_view=True, sort_action='native',
+                        style_as_list_view=True, sort_action='native', fixed_rows={'headers': True},
                         style_header={'fontWeight': 'bold',
                                       'backgroundColor': header_table_color},
                         style_table={'height': '300px', 'overflowY': 'auto'})
@@ -309,7 +309,7 @@ def update_dividend(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
+                                                               'backgroundColor': header_table_color}, fixed_rows={'headers': True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
@@ -415,8 +415,10 @@ def update_stat_table(input_value, window_value):
                                   index=['Tomorrow', 'W', '15D', 'Month'], columns=[input_value]).round(2)
     stat_measures = pd.DataFrame(index=["Return Mean Annualized"], columns=[""])
     ## Mean of Returns in Window Value
-    stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
-                                                  + str('%')
+    # stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
+    #                                               + str('%')
+    stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].tail(window_value) * 252), 2))+str('%')
+
     ## Expected Volatility
     stat_measures.loc["Expected Daily Volatility for Tomorrow"] = str(estimacion_vol.iat[0, 0]) + str('%')
     stat_measures.loc["Expected Daily Volatility at the Week"] = str(estimacion_vol.iat[1, 0]) + str('%')
@@ -633,7 +635,7 @@ def update_info(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
+                                                               'backgroundColor': header_table_color}, fixed_rows={'headers': True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
