@@ -16,7 +16,7 @@ from Tickers_and_prices import prices_from_index, update_prices, dividend_downlo
 from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
     multi_table_styler
 
-## test test
+
 def initializer_stock_analysis(input_value):
     global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
     indx = input_value
@@ -49,7 +49,6 @@ def initializer_stock_analysis(input_value):
 initializer_stock_analysis("MXX")
 
 app = dash.Dash()
-
 server = app.server
 
 app.title = 'PAP Stock Analyzer'
@@ -81,6 +80,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                              style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
             ]),
+            ## test
             html.Div(dcc.Graph(id="graph_close")),
 
             html.Div(id='today_table',
@@ -181,6 +181,7 @@ hovertext_size = 24
 #historicos = initializer_stock_analysis.historicos
 #indx = initializer_stock_analysis.indx
 
+
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def market_table(input_value):
@@ -209,7 +210,7 @@ def market_table(input_value):
     columns = [{"name": i, "id": i, } for i in prices.columns]
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
-                        style_as_list_view=True, sort_action='native', fixed_rows={'headers': True},
+                        style_as_list_view=True, sort_action='native',
                         style_header={'fontWeight': 'bold',
                                       'backgroundColor': header_table_color},
                         style_table={'height': '300px', 'overflowY': 'auto'})
@@ -308,7 +309,7 @@ def update_dividend(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color}, fixed_rows={'headers': True},
+                                                               'backgroundColor': header_table_color},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
@@ -416,7 +417,7 @@ def update_stat_table(input_value, window_value):
     ## Mean of Returns in Window Value
     # stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
     #                                               + str('%')
-    stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].tail(window_value) * 252), 2))+str('%')
+    tat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].tail(window_value) * 252), 2))+str('%')
 
     ## Expected Volatility
     stat_measures.loc["Expected Daily Volatility for Tomorrow"] = str(estimacion_vol.iat[0, 0]) + str('%')
@@ -634,7 +635,7 @@ def update_info(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color}, fixed_rows={'headers': True},
+                                                               'backgroundColor': header_table_color},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
