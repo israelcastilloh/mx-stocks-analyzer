@@ -181,7 +181,7 @@ hovertext_size = 24
 #historicos = initializer_stock_analysis.historicos
 #indx = initializer_stock_analysis.indx
 
-
+##test
 @app.callback(dash.dependencies.Output('market_table', 'children'),
               [dash.dependencies.Input('drop-down-tickers', 'value')])
 def market_table(input_value):
