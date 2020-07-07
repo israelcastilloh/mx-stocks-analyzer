@@ -15,6 +15,8 @@ import plotly.io as pio
 from Tickers_and_prices import prices_from_index, update_prices, dividend_download
 from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
     multi_table_styler
+from datetime import datetime
+
  ##test? july 7
 
 def initializer_stock_analysis(input_value):
