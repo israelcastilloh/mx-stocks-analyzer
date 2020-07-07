@@ -16,7 +16,7 @@ from Tickers_and_prices import prices_from_index, update_prices, dividend_downlo
 from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
     multi_table_styler
 
-
+## test test
 def initializer_stock_analysis(input_value):
     global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
     indx = input_value
@@ -80,7 +80,6 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                              style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
                                     'vertical-align': 'middle', 'font-size': fontsize}),
             ]),
-            ## test
             html.Div(dcc.Graph(id="graph_close")),
 
             html.Div(id='today_table',
