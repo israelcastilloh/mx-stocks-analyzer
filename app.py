@@ -15,7 +15,6 @@ import plotly.io as pio
 from Tickers_and_prices import prices_from_index, update_prices, dividend_download
 from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
     multi_table_styler
-from datetime import datetime
 
 
 def initializer_stock_analysis(input_value):
@@ -43,7 +42,10 @@ def initializer_stock_analysis(input_value):
             dividendos[ticker] = y
         except:
             pass
-
+    initializer_stock_analysis.historicos = historicos
+    initializer_stock_analysis.tickers = tickers
+    initializer_stock_analysis.tickers.sort()
+    initializer_stock_analysis.indx = indx
 
 
 initializer_stock_analysis("MXX")
@@ -57,83 +59,86 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
     dcc.Tabs([
 
         dcc.Tab(label="Stocks Analysis", style=tab_style(), selected_style=selected_tab_style(), children=[
-
+            # html.Div([
+            #     dcc.Input(id='etf-input', value="MXX", type="text"),
+            #     html.Button(id="submit-button", n_clicks=0, children="submit")
+            #     ]),
             html.Div(id='stock-analyzer', children=[
                 html.H1(children=globals()["index_df"] + " Market Components",
                         style=stock_analyzer_titles()),
                 #
                 # html.P(closes.index[-1].strftime('%d-%b-%Y'),
                 #        style={'font-family': 'verdana', 'color': 'white', 'width': '320px', 'left': '4%',
-                #               'position': 'relative', 'align': 'left',
+                #             'position': 'relative', 'align': 'left',
                 #               'vertical-align': 'middle', 'font-size': fontsize, 'fontWeight': 'bold'}),
 
                 html.Div(id='market_table',
                          style=tables_styler('90%')),
 
-                html.Div([
-                    dcc.Dropdown(id='drop-down-tickers',
-                                 options=[{'label': i, 'value': i} for i in tickers],
-                                 value=tickers[3],
-                                 style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
-                                        'vertical-align': 'middle', 'font-size': fontsize}),
-                ]),
-                ## test
-                html.Div(dcc.Graph(id="graph_close")),
+            html.Div([
+                dcc.Dropdown(id='drop-down-tickers',
+                             options=[{'label': i, 'value': i} for i in tickers],
+                             value=tickers[3],
+                             style={'font-family': 'verdana', 'width': '320px', 'left': '20%',
+                                    'vertical-align': 'middle', 'font-size': fontsize}),
+            ]),
+            ## test
+            html.Div(dcc.Graph(id="graph_close")),
 
-                html.Div(id='today_table',
-                         style=tables_styler('60%')),
+            html.Div(id='today_table',
+                     style=tables_styler('60%')),
 
-                html.Div(id='info_table',
-                         style=multi_table_styler('2.5%', '60%')),
+            html.Div(id='info_table',
+                     style=multi_table_styler('2.5%', '60%')),
 
-                html.Div(id='dividend_table',
-                         style=multi_table_styler('2.5%', '30%')),
+            html.Div(id='dividend_table',
+                     style=multi_table_styler('2.5%', '30%')),
 
-                html.Div([
-                    html.H2(children="Daily Return Analysis", style=stock_analyzer_titles()),
-                ]),
+            html.Div([
+                html.H2(children="Daily Return Analysis", style=stock_analyzer_titles()),
+            ]),
 
-                html.Div([
-                    dcc.RadioItems(id="window-checker", style={"padding-left": "80px", "padding-bottom": "20px",
-                                                               'display': 'block',
-                                                               'font-family': 'verdana', 'color': 'white'},
-                                   options=[
-                                       {'label': 'W', 'value': 5},
-                                       {'label': '2W', 'value': 10},
-                                       {'label': '1M', 'value': 20},
-                                       {'label': 'Q', 'value': 63},
-                                       {'label': '6M', 'value': 126},
-                                       {'label': 'Y', 'value': 252},
-                                       {'label': '2Y', 'value': 252 * 2},
-                                       {'label': '5Y', 'value': 252 * 5}
-                                   ], value=252)
-                ]),
+            html.Div([
+                dcc.RadioItems(id="window-checker", style={"padding-left": "80px", "padding-bottom": "20px",
+                                                           'display': 'block',
+                                                           'font-family': 'verdana', 'color': 'white'},
+                               options=[
+                                   {'label': 'W', 'value': 5},
+                                   {'label': '2W', 'value': 10},
+                                   {'label': '1M', 'value': 20},
+                                   {'label': 'Q', 'value': 63},
+                                   {'label': '6M', 'value': 126},
+                                   {'label': 'Y', 'value': 252},
+                                   {'label': '2Y', 'value': 252 * 2},
+                                   {'label': '5Y', 'value': 252 * 5}
+                               ], value=252)
+            ]),
 
-                html.Div(
-                    dcc.Graph(id="return-figure", style={'font-family': 'verdana', 'display': 'center-block',
-                                                         'padding-left': '30px'})),
+            html.Div(
+                dcc.Graph(id="return-figure", style={'font-family': 'verdana', 'display': 'center-block',
+                                                     'padding-left': '30px'})),
 
-                html.Div(id='stat_table', style=tables_styler('60%')),
+            html.Div(id='stat_table', style=tables_styler('60%')),
 
-                html.Div([
-                    html.H2(children="Volatility Analysis", style=stock_analyzer_titles()),
-                    html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
-                ]),
+            html.Div([
+                html.H2(children="Volatility Analysis", style=stock_analyzer_titles()),
+                html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
+            ]),
 
-                html.Div(dcc.Graph(id="volatility-figure",
-                                   style={'font-family': 'verdana', 'display': 'center-block',
-                                          'padding-left': '30px'})),
+            html.Div(dcc.Graph(id="volatility-figure",
+                               style={'font-family': 'verdana', 'display': 'center-block',
+                                      'padding-left': '30px'})),
 
-                html.Div([
-                    html.H2(children="Index Correlation Analysis", style=stock_analyzer_titles()),
-                    html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
-                ]),
+            html.Div([
+                html.H2(children="Index Correlation Analysis", style=stock_analyzer_titles()),
+                html.H3(children="Click on graph legend to hide/show line", style=suggestion_text()),
+            ]),
 
-                html.Div(dcc.Graph(id="correlation-figure",
-                                   style={'font-family': 'verdana', 'display': 'center-block',
-                                          'padding-left': '30px',
-                                          'padding-bottom': '30px'}))
-            ])
+            html.Div(dcc.Graph(id="correlation-figure",
+                               style={'font-family': 'verdana', 'display': 'center-block',
+                                      'padding-left': '30px',
+                                      'padding-bottom': '30px'}))
+        ])
         ]),
         dcc.Tab(label='Tab Test', style=tab_style(), selected_style=selected_tab_style(), children=[])
     ])
@@ -143,6 +148,40 @@ header_table_color = '#555555'
 fontsize_titles = '35px'
 hovertext_size = 24
 
+# @app.callback(
+#     Output('stock-analyzer', 'children'),
+#     [Input('etf-input', 'value')],
+#     [State('submit-button', 'n_clicks')])
+# def initializer_stock_analysis(input_value):
+#     global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
+#     indx = input_value
+#     ventana = 365 * 5  # User input, maybe
+#     tickers, historicos, closes = prices_from_index(indx, ventana)
+#     tickers, historicos, closes = update_prices(indx, ventana)
+#     if indx == 'MXX':
+#         mercado = closes['^' + indx]
+#         dividendos = dividend_download(tickers)
+#         index_name = yf.Ticker('^' + indx)
+#     else:
+#         mercado = closes[indx]
+#         dividendos = {}
+#         index_name = yf.Ticker(indx)
+#
+#     j = pd.DataFrame.from_dict(index_name.info, orient='index')
+#     index_df = str(j.loc["shortName"].values).strip("[]")
+#     for ticker in tickers:
+#         try:
+#             y = pd.DataFrame(historicos[ticker]['Dividends']).dropna()
+#             y.reset_index(level=0, inplace=True)
+#             y = y.sort_values(by='Date', ascending=False)
+#             dividendos[ticker] = y
+#         except:
+#             pass
+#     tickers.sort()
+
+#tickers = initializer_stock_analysis.tickers
+#historicos = initializer_stock_analysis.historicos
+#indx = initializer_stock_analysis.indx
 
 
 @app.callback(dash.dependencies.Output('market_table', 'children'),
@@ -163,7 +202,7 @@ def market_table(input_value):
         else:
             prices.loc[ticker, ""] = '🔴'
         prices.loc[ticker, "Chg. Volume"] = str(round(last_two_change.Volume[-1] * 100, 1)) + str('%')
-        prices.loc[ticker, "Volume"] = (prices.loc[ticker, "Volume"].astype(float) / 1000).round(2). \
+        prices.loc[ticker, "Volume"] = (prices.loc[ticker, "Volume"].astype(float) / 1000).round(2).\
                                            astype(str) + 'M'
         prices.append(prices)
         prices = prices.round(2)
@@ -272,8 +311,7 @@ def update_dividend(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
-                        fixed_rows={"headers": True},
+                                                               'backgroundColor': header_table_color}, fixed_rows={"headers": True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
@@ -382,7 +420,7 @@ def update_stat_table(input_value, window_value):
     # stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
     #                                               + str('%')
     stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].
-                                                                    tail(window_value) * 252), 2)) + str('%')
+                                                                   tail(window_value) * 252), 2))+str('%')
 
     ## Expected Volatility
     stat_measures.loc["Expected Daily Volatility for Tomorrow"] = str(estimacion_vol.iat[0, 0]) + str('%')
@@ -575,14 +613,14 @@ def update_info(input_value):
                      "fiftyTwoWeekLow", "52WeekChange", "dividendYield", "trailingAnnualDividendYield", "trailingEps",
                      "forwardEps",
                      "trailingPE", "forwardPE", "priceToBook", "bookValue", "twoHundredDayAverage",
-                     "payoutRatio", "profitMargins", "floatShares",
+                     "payoutRatio", "profitMargins",  "floatShares",
                      "sharesOutstanding", "heldPercentInsiders"]]
     info_df = info_df.rename({'shortName': 'Name', 'sector': 'Sector', 'industry': 'Industry',
                               'country': 'Country', 'marketCap': 'Market Cap', 'exchange': 'Exchange',
                               'exchangeTimezoneShortName': 'Timezone', 'market': 'Market',
                               'currency': 'Currency', 'beta': 'Beta',
                               'dividendYield': 'Dividend Yield', 'fiftyTwoWeekHigh': '52-week High',
-                              "fiftyTwoWeekLow": "52-week Low",
+                              "fiftyTwoWeekLow":"52-week Low",
                               'trailingAnnualDividendYield': 'Trailing Annual Div. Yield',
                               'trailingEps': 'Trailing EPS', 'forwardEps': 'Forward EPS',
                               'trailingPE': 'Trailing PE', 'forwardPE': 'Forward PE',
@@ -600,8 +638,7 @@ def update_info(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
-                        fixed_rows={"headers": True},
+                                                               'backgroundColor': header_table_color}, fixed_rows={"headers": True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
