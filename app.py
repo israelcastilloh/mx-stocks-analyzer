@@ -48,7 +48,7 @@ def initializer_stock_analysis(input_value):
     initializer_stock_analysis.indx = indx
 
 
-initializer_stock_analysis("SPY")
+initializer_stock_analysis("MXX")
 
 app = dash.Dash()
 server = app.server
