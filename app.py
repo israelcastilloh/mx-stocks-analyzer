@@ -212,7 +212,7 @@ def market_table(input_value):
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, sort_action='native',
                         style_header={'fontWeight': 'bold',
-                                      'backgroundColor': header_table_color},
+                                      'backgroundColor': header_table_color}, fixed_rows={"headers": True},
                         style_table={'height': '300px', 'overflowY': 'auto'})
 
 
@@ -309,7 +309,7 @@ def update_dividend(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
+                                                               'backgroundColor': header_table_color}, fixed_rows={"headers": True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
@@ -417,7 +417,7 @@ def update_stat_table(input_value, window_value):
     ## Mean of Returns in Window Value
     # stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
     #                                               + str('%')
-    tat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].
+    stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].
                                                                    tail(window_value) * 252), 2))+str('%')
 
     ## Expected Volatility
@@ -636,7 +636,7 @@ def update_info(input_value):
     return dt.DataTable(data=data, columns=columns, style_cell={'textAlign': 'center', 'font-family': 'verdana',
                                                                 'backgroundColor': '#111111', 'color': 'white'},
                         style_as_list_view=True, style_header={'fontWeight': 'bold',
-                                                               'backgroundColor': header_table_color},
+                                                               'backgroundColor': header_table_color}, fixed_rows={"headers": True},
                         style_table={'height': '200px', 'overflowY': 'auto'})
 
 
