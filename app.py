@@ -46,9 +46,10 @@ def initializer_stock_analysis(input_value):
     initializer_stock_analysis.tickers = tickers
     initializer_stock_analysis.tickers.sort()
     initializer_stock_analysis.indx = indx
-initializer_stock_analysis("MXX")
+initializer_stock_analysis("MCHI")
 
 app = dash.Dash()
+
 server = app.server
 
 app.title = 'PAP Stock Analyzer'
