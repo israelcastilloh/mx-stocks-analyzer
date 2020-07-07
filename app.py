@@ -417,7 +417,8 @@ def update_stat_table(input_value, window_value):
     ## Mean of Returns in Window Value
     # stat_measures.loc["Return Mean Annualized"] = str(round(np.mean(log_returns['Log Returns'] * 252 * 100), 2)) \
     #                                               + str('%')
-    tat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].tail(window_value) * 252), 2))+str('%')
+    tat_measures.loc["Return Mean Annualized"] = str(round(np.mean(data['Returns'].
+                                                                   tail(window_value) * 252), 2))+str('%')
 
     ## Expected Volatility
     stat_measures.loc["Expected Daily Volatility for Tomorrow"] = str(estimacion_vol.iat[0, 0]) + str('%')
