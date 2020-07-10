@@ -15,10 +15,10 @@ import plotly.io as pio
 from Tickers_and_prices import prices_from_index, update_prices, dividend_download
 from html_style import tab_style, selected_tab_style, stock_analyzer_titles, suggestion_text, tables_styler, fontsize, \
     multi_table_styler
-
-###### test
+from datetime import datetime
+###### test ###
 def initializer_stock_analysis(input_value):
-    global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df
+    global historicos, closes, mercado, dividendos, tickers, historicos, indx, index_df, index_pointer
     indx = input_value
     ventana = 365 * 5.1  # User input, maybe
     tickers, historicos, closes = prices_from_index(indx, ventana)
@@ -27,10 +27,12 @@ def initializer_stock_analysis(input_value):
         mercado = closes['^' + indx]
         dividendos = dividend_download(tickers)
         index_name = yf.Ticker('^' + indx)
+        index_pointer = '^' + indx
     else:
         mercado = closes[indx]
         dividendos = {}
         index_name = yf.Ticker(indx)
+        index_pointer = indx
 
     j = pd.DataFrame.from_dict(index_name.info, orient='index')
     index_df = str(j.loc["shortName"].values).strip("[]")
@@ -64,7 +66,7 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
                 html.H1(children=globals()["index_df"] + " Market Components",
                         style=stock_analyzer_titles()),
                 #
-                html.P(closes.index[-1].strftime('%d-%b-%Y'),
+                html.P(datetime.today().strftime('%d-%B-%Y'),
                        style={'font-family': 'verdana', 'color': 'white', 'width': '320px', 'left': '4%',
                             'position': 'relative', 'align': 'left',
                               'vertical-align': 'middle', 'font-size': fontsize, 'fontWeight': 'bold'}),
@@ -134,8 +136,17 @@ app.layout = html.Div(style={'backgroundColor': '#111111', "border-width": "1px"
             html.Div(dcc.Graph(id="correlation-figure",
                                style={'font-family': 'verdana', 'display': 'center-block',
                                       'padding-left': '30px',
-                                      'padding-bottom': '30px'}))
-        ])
+                                      'padding-bottom': '30px'})),
+
+            html.Div([
+                html.P('Developed using information from Yahoo! Finance by:', style=suggestion_text()),
+                html.P('Israel Castillo   castillo.israelh@gmail.com', style=suggestion_text()),
+                html.P('Esteban Ortiz   eortiz@gmail.com', style=suggestion_text()),
+                html.P('PAP 4J05 - OPTIMIZACIÓN DE PROGRAMAS DE INVERSIÓN EN INTERMEDIARIOS FINANCIEROS, ITESO',
+                           style=suggestion_text())
+                ])
+
+            ])
         ]),
         dcc.Tab(label='Tab Test', style=tab_style(), selected_style=selected_tab_style(), children=[])
     ])
@@ -242,8 +253,12 @@ def update_fig(input_value):
                                                            ), rangeslider=dict(visible=False), type="date"
                                     )
                                     )
-    trace_candlestick.update_layout(showlegend=False, yaxis_title="Price")
-    trace_candlestick.update_yaxes(tickprefix="$")
+    if input_value == index_pointer:
+        trace_candlestick.update_layout(showlegend=False, yaxis_title="Points")
+        trace_candlestick.update_yaxes(tickprefix="")
+    else:
+        trace_candlestick.update_layout(showlegend=False, yaxis_title="Price")
+        trace_candlestick.update_yaxes(tickprefix="$")
 
     # Add Volume Figure
 
